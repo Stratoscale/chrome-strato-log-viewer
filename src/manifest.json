@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+
+  "name": "Strato Log Interpreter",
+  "description": "Shows a Strato JSON log file nicely",
+  "version": "1.5",
+  "background": {
+    "scripts": ["backgroundcommon.js", "listener.js", "buttonhook.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["autodetect.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "<all_urls>"
+  ],
+  "browser_action": {
+    "default_icon": "icon.png"
+  },
+  "web_accessible_resources": [
+    "interpreter.css"
+  ]
+}

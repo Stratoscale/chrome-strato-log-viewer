@@ -1,0 +1,20 @@
+.ERROR, .CRITICAL {
+  color: red;
+}
+
+.WARNING {
+  color: orange;
+}
+
+.SUCCESS {
+  color: green;
+}
+
+.PROGRESS {
+  color: teal;
+}
+
+.location {
+  color: gray;
+  font-size: small;
+}
