@@ -249,17 +249,17 @@ chrome.storage.local.get(optionsKeys, function(items) {
 
     Object.keys(LOG_LEVELS).forEach(function(level) {
       if (items[level] !== undefined) {
-	if (items[level] === true) {
-	  LOG_LEVELS[level].show = true
-	} else {
-	  LOG_LEVELS[level].show = false
-	}
+        if (items[level] === true) {
+          LOG_LEVELS[level].show = true
+        } else {
+          LOG_LEVELS[level].show = false
+        }
       } else {
-	// default
-	LOG_LEVELS[level].show = true
+        // default
+        LOG_LEVELS[level].show = true
       }
     })
-    
+
     if (items["autodetect"] !== undefined) {
       AUTO_DETECT = items["autodetect"]
     }
@@ -267,8 +267,10 @@ chrome.storage.local.get(optionsKeys, function(items) {
     if (items["threadName"] !== undefined) {
       SHOW_THREAD_NAME = items["threadName"]
     }
-    
+
+    console.time('parse')
     parse()
+    console.timeEnd('parse')
   } finally {
     chrome.runtime.sendMessage({message: "done"})
   }
