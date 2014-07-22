@@ -16,22 +16,25 @@ var AUTO_DETECT = false
 var SHOW_THREAD_NAME = false
 var maxThreadNameLength = -1
 
+function showHideByClassName(className, show) {
+  var displayValue
+  if (show) {
+    displayValue = "inline"
+  } else {
+    displayValue = "none"
+  }
+  filteredElements = document.getElementsByClassName(className)
+  Array.prototype.filter.call(filteredElements, function(element){
+    element.style.display = displayValue
+  })
+}
+
 function showLogLevel(level, cb) {
   var value = {}
   value[level] = cb.checked
   chrome.storage.local.set(value, null)
   LOG_LEVELS[level].show = cb.checked
-  
-  var displayValue
-  if (cb.checked) {
-    displayValue = "inline"
-  } else {
-    displayValue = "none"
-  }
-  filteredElements = document.getElementsByClassName(level)
-  Array.prototype.filter.call(filteredElements, function(levelElement){
-    levelElement.style.display = displayValue
-  })
+  showHideByClassName(level, cb.checked)
   return true
 }
 
@@ -44,16 +47,7 @@ function setAutoDetect(cb) {
 function showThreadName(cb) {
   chrome.storage.local.set({ "threadName": cb.checked }, null)
   SHOW_THREAD_NAME = cb.checked
-  var nameElements = document.getElementsByClassName("threadName")
-  var displayValue
-  if (cb.checked) {
-    displayValue = "inline"
-  } else {
-    displayValue = "none"
-  }
-  Array.prototype.filter.call(nameElements, function(nameElement){
-    nameElement.style.display = displayValue
-  })  
+  showHideByClassName("threadName", cb.checked)
   return true  
 }
 
