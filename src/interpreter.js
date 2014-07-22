@@ -17,15 +17,9 @@ var SHOW_THREAD_NAME = false
 var maxThreadNameLength = -1
 
 function showHideByClassName(className, show) {
-  var displayValue
-  if (show) {
-    displayValue = "inline"
-  } else {
-    displayValue = "none"
-  }
   filteredElements = document.getElementsByClassName(className)
   Array.prototype.filter.call(filteredElements, function(element){
-    element.style.display = displayValue
+    element.style.display = show ? "inline" : "none"
   })
 }
 
