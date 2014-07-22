@@ -32,20 +32,20 @@ function showHideByClassName(className, show) {
 function showLogLevel(level, cb) {
   var value = {}
   value[level] = cb.checked
-  chrome.storage.local.set(value, null)
+  chrome.storage.local.set(value)
   LOG_LEVELS[level].show = cb.checked
   showHideByClassName(level, cb.checked)
   return true
 }
 
 function setAutoDetect(cb) {
-  chrome.storage.local.set({ "autodetect": cb.checked }, null)
+  chrome.storage.local.set({ "autodetect": cb.checked })
   AUTO_DETECT = cb.checked
   return true
 }
 
 function showThreadName(cb) {
-  chrome.storage.local.set({ "threadName": cb.checked }, null)
+  chrome.storage.local.set({ "threadName": cb.checked })
   SHOW_THREAD_NAME = cb.checked
   showHideByClassName("threadName", cb.checked)
   return true  
@@ -237,7 +237,7 @@ var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", 
 chrome.storage.local.get(optionsKeys, function(items) {
   try {
     if (items["showoriginal"] !== undefined && items["showoriginal"] === true) {
-      chrome.storage.local.set({ "showoriginal": false }, null)
+      chrome.storage.local.set({ "showoriginal": false })
       return
     } 
 
