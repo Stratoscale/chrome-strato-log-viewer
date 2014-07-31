@@ -134,12 +134,12 @@ function jsonLineToText(json) {
   // replace kwargs
   if (!(args instanceof Array)) {
     for (prop in args) {
-      rekwargs = new RegExp("%\\(" + prop + "\\)[rds]", "gm")
+      rekwargs = new RegExp("%\\(" + prop + "\\)([rdsf]|0?\\.?[0-9]+f)", "gm")
       msg = msg.replace(rekwargs, argument(args[prop]))
     }
   }
   // replace args
-  msg = msg.replace(/%[rd]/g, "%s")
+  msg = msg.replace(/%[rdf]/g, "%s")
   for (var i = 0; i < args.length; ++i) {
     msg = msg.replace("%s", argument(args[i]))
   }
