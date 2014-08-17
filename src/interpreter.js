@@ -207,7 +207,9 @@ function parse() {
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
 
   document.head.innerHTML = css
-  document.body.innerHTML = showOriginalLink + options + '<pre>' + outputLines.join("") + '</pre>'
+  document.body.innerHTML = showOriginalLink + options + '<pre></pre>'
+  preTag = document.getElementsByTagName("pre")[0];
+  preTag.innerHTML = outputLines.join("")
 
 //   adjustThreadNameLengthToMax()
   
