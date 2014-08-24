@@ -144,7 +144,7 @@ function jsonLineToText(json) {
     msg = msg.replace("%s", argument(args[i]))
   }
 
-  exc_text = ""
+  var exc_text = ""
   if (obj.exc_text) {
     exc_text = "<blockquote>" + lineBreaks(obj.exc_text) + "</blockquote>"
   }
@@ -161,29 +161,32 @@ function jsonLineToText(json) {
 }
 
 function parse() {
+  var parser = new DOMParser()
+  var linesFragment = document.createDocumentFragment()
   var inputLines = document.body.innerText.split("\n")
-  var outputLines = []
   var lineParseSuccess = inputLines.every(function(line) {
     if (line === "") {
-      outputLines.push("[EMPTY LOG LINE]" + "<br/>")
-      return true
+      line = '<span class="line">[EMPTY LOG LINE]</span><br/>'
+    } else if (line === "None") {
+      line = '<span class="line">[NONE LOG LINE]</span><br/>'
+    } else if (line[0] === '\ufffd' && line === Array(line.length + 1).join('\ufffd')) {
+      line = '<span class="line">' + line + '</span><br/>'
+    } else {
+      try {
+        line = jsonLineToText(line)
+      } catch(err) {
+        console.log(err)
+        if (autoParse === true) {
+            return false // When not auto-parsing, continue
+        }
+        line = '<span class="line">[FAILED LOG LINE]: ' + line + '</span><br/>'
+      }
     }
-    if (line === "None") {
-      outputLines.push("[NONE LOG LINE]" + "<br/>")
-      return true
-    }
-    if (line[0] === '\ufffd' && line === Array(line.length + 1).join('\ufffd')) {
-      outputLines.push(line + "<br/>")
-      return true
-    }
-    try {
-      outputLines.push(jsonLineToText(line))
-      return true
-    } catch(err) {
-      console.log(err)
-      outputLines.push("[FAILED LOG LINE]: " + line + "<br/>")
-      return autoParse === false // When not auto-parsing, continue
-    }
+
+    var parsedLine = parser.parseFromString(line, "text/html").body
+    linesFragment.appendChild(parsedLine.childNodes[0]) // <span line>
+    linesFragment.appendChild(parsedLine.childNodes[0]) // <br>
+    return true
   });
   
   if (lineParseSuccess === false && autoParse === true) {
@@ -196,7 +199,7 @@ function parse() {
   var options = '<label><input id="autodetect" type="checkbox"' + (AUTO_DETECT ? " checked" : "") + '>Auto detect (experimental)</label><br/>'
   Object.keys(LOG_LEVELS).forEach(function(level) {
     var checked = ""
-    levelProps = LOG_LEVELS[level]
+    var levelProps = LOG_LEVELS[level]
     if (levelProps !== undefined && levelProps.show) {
       checked = "checked"
     }
@@ -208,8 +211,8 @@ function parse() {
 
   document.head.innerHTML = css
   document.body.innerHTML = showOriginalLink + options + '<pre></pre>'
-  preTag = document.getElementsByTagName("pre")[0];
-  preTag.innerHTML = outputLines.join("")
+  var preTag = document.getElementsByTagName("pre")[0];
+  preTag.appendChild(linesFragment)
 
 //   adjustThreadNameLengthToMax()
   
