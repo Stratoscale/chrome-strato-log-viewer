@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Strato Log Interpreter",
-  "description": "Shows a Strato JSON log file nicely",
-  "version": "1.5",
+  "name": "Stratoscale Log Viewer",
+  "description": "Shows a Stratoscale JSON-formatted log file nicely",
+  "version": "1.6",
   "background": {
     "scripts": ["backgroundcommon.js", "listener.js", "buttonhook.js"]
   },
