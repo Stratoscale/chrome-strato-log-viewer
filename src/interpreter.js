@@ -15,12 +15,23 @@ Object.keys(LOG_LEVELS).forEach(function(level) {
 var AUTO_DETECT = false
 var SHOW_THREAD_NAME = false
 var maxThreadNameLength = -1
+var customStyleSheet = null
 
 function showHideByClassName(className, show) {
-  filteredElements = document.getElementsByClassName(className)
-  Array.prototype.filter.call(filteredElements, function(element){
-    element.style.display = show ? "inline" : "none"
-  })
+  if (customStyleSheet === null) {
+    var style = document.createElement("style")
+    document.head.appendChild(style)
+    customStyleSheet = style.sheet
+  }
+
+  var currRuleIndex = -1
+  for (var i = 0; i < customStyleSheet.cssRules.length; ++i) {
+    if (customStyleSheet.cssRules[i].selectorText === '.' + className.toLowerCase()) {
+      document.styleSheets[1].removeRule(i)
+    }
+  }
+
+  customStyleSheet.insertRule('.' + className + ' { display: ' + (show ? "inline" : "none") + '; }', 0)
 }
 
 function showLogLevel(level, cb) {
@@ -87,11 +98,7 @@ function fileLocation(filename, lineno) {
 
 function threadName(name) {
   maxThreadNameLength = Math.max(maxThreadNameLength, name.length)
-  var style = ''
-  if (SHOW_THREAD_NAME === false) {
-    style = 'style="display: none"'
-  } 
-  return '<span class="threadName" ' + style + '>' + name + ' </span>'
+  return '<span class="threadName">' + name + ' </span>'
 }
 
 // function adjustThreadNameLengthToMax() {
@@ -150,14 +157,7 @@ function jsonLineToText(json) {
   }
 
   var levelProps = LOG_LEVELS[obj.levelname]
-  var lineStyle = ''
-  if (levelProps !== undefined) {
-    if (levelProps.show === false) {
-      lineStyle = 'style="display: none"'
-    } 
-  }
-  
-  return '<span class="line ' + obj.levelname +'" ' + lineStyle + '>' + created(obj.created) + " " + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno) + '</span><br class="' + obj.levelname + '" ' + lineStyle + '/>'
+  return '<span class="line ' + obj.levelname + '">' + created(obj.created) + " " + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno) + '</span><br class="' + obj.levelname + '" />'
 }
 
 function parse() {
@@ -217,6 +217,7 @@ function parse() {
 //   adjustThreadNameLengthToMax()
   
   Object.keys(LOG_LEVELS).forEach(function(level) {
+    showHideByClassName(level, LOG_LEVELS[level].show)
     var button = document.getElementById(level)
     button.onclick = function() { return showLogLevel(level, button); }
   })
@@ -227,6 +228,7 @@ function parse() {
   var showOriginaLink = document.getElementById("showoriginal")
   showOriginaLink.onclick = function() { return showOriginal(); }
 
+  showHideByClassName("threadName", SHOW_THREAD_NAME)
   var showThreadNameButton = document.getElementById("threadName")
   showThreadNameButton.onclick = function() { return showThreadName(showThreadNameButton); }
 }
