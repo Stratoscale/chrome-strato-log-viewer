@@ -1,3 +1,4 @@
+MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 var LOG_LEVELS = {
   "DEBUG"    : { "show": true },
   "INFO"     : { "show": true },
@@ -13,8 +14,9 @@ Object.keys(LOG_LEVELS).forEach(function(level) {
 })
 
 var AUTO_DETECT = false
+var SHOW_CREATED = true
+var SHOW_DATE = false
 var SHOW_THREAD_NAME = false
-var maxThreadNameLength = -1
 var customStyleSheet = null
 
 function showHideByClassName(className, show) {
@@ -49,6 +51,20 @@ function setAutoDetect(cb) {
   return true
 }
 
+function showCreated(cb) {
+  chrome.storage.local.set({ "created": cb.checked })
+  SHOW_CREATED = cb.checked
+  showHideByClassName("created", cb.checked)
+  return true
+}
+
+function showDate(cb) {
+  chrome.storage.local.set({ "date": cb.checked })
+  SHOW_DATE = cb.checked
+  showHideByClassName("date", cb.checked)
+  return true
+}
+
 function showThreadName(cb) {
   chrome.storage.local.set({ "threadName": cb.checked })
   SHOW_THREAD_NAME = cb.checked
@@ -79,12 +95,16 @@ function lineBreaks(obj) {
   return htmlEncode(text).replace(/\n/g, "<br/>")
 }
 
-function padSpaces(s, n) {
+function padSpacesRight(s, n) {
   return s + Array(n - s.length + 1).join(" ")
 }
 
+function padLeft(s, n, c) {
+  return Array(n - s.length + 1).join(c) + s
+}
+
 function levelname(name, maxLevelNameWidth) {
-  return '<span>' + padSpaces(name, maxLevelNameWidth) + '</span>'
+  return '<span>' + padSpacesRight(name, maxLevelNameWidth) + '</span>'
 }
 
 function fileLocation(filename, lineno) {
@@ -97,28 +117,19 @@ function fileLocation(filename, lineno) {
 }
 
 function threadName(name) {
-  maxThreadNameLength = Math.max(maxThreadNameLength, name.length)
   return '<span class="threadName">' + name + ' </span>'
 }
 
-// function adjustThreadNameLengthToMax() {
-//   nameElements = document.getElementsByClassName("threadName")
-//   Array.prototype.filter.call(nameElements, function(nameElement){
-//     nameElement.innerText = padSpaces(nameElement.innerText, maxThreadNameLength)
-//   })  
-// }
-
-// var date = new Date(0)
-// var dateOptions =
-// {
-//   year: "numeric", month: "short",
-//   day: "numeric", hour: "2-digit", minute: "2-digit"
-// }
 function created(utcSeconds) {
-  //date.setUTCSeconds(date)
-  //var dateString = date.toUTCString()
+  var date = new Date(Math.floor(utcSeconds) * 1000)
+  var dateString =
+    MONTHS[date.getUTCMonth()] + ' ' +
+    padLeft(date.getUTCDate().toString(), 2, ' ') + ' ' +
+    padLeft(date.getUTCHours().toString(), 2, '0') + ':' +
+    padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
+    padLeft(date.getUTCSeconds().toString(), 2, '0')
   
-  return '<span class="created">' + utcSeconds.toFixed(6) + /*' ' + dateString +*/ '</span>'
+  return '<span class="created">' + utcSeconds.toFixed(6) + ' </span><span class="date">' + dateString + ' </span>'
 }
 
 function argument(arg) {
@@ -157,7 +168,7 @@ function jsonLineToText(json) {
   }
 
   var levelProps = LOG_LEVELS[obj.levelname]
-  return '<span class="line ' + obj.levelname + '">' + created(obj.created) + " " + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno) + '</span><br class="' + obj.levelname + '" />'
+  return '<span class="line ' + obj.levelname + '">' + created(obj.created) + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno) + '</span><br class="' + obj.levelname + '" />'
 }
 
 function parse() {
@@ -205,6 +216,8 @@ function parse() {
     }
     options += '<label><input id="' + level + '" type="checkbox"' + ' accesskey="' + level[0] + '" ' + checked + '>' + level + '</label>'
   })
+  options += '<label><input id="created" type="checkbox" accesskey="R" ' + (SHOW_CREATED ? " checked" : "") + '>Created</label>'
+  options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC Date</label>'
   options += '<label><input id="threadName" type="checkbox" accesskey="T" ' + (SHOW_THREAD_NAME ? " checked" : "") + '>Thread name</label>'
   options += "<br/>"
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
@@ -214,8 +227,6 @@ function parse() {
   var preTag = document.getElementsByTagName("pre")[0];
   preTag.appendChild(linesFragment)
 
-//   adjustThreadNameLengthToMax()
-  
   Object.keys(LOG_LEVELS).forEach(function(level) {
     showHideByClassName(level, LOG_LEVELS[level].show)
     var button = document.getElementById(level)
@@ -228,12 +239,20 @@ function parse() {
   var showOriginaLink = document.getElementById("showoriginal")
   showOriginaLink.onclick = function() { return showOriginal(); }
 
+  showHideByClassName("created", SHOW_CREATED)
+  var showCreatedButton = document.getElementById("created")
+  showCreatedButton.onclick = function() { return showCreated(showCreatedButton); }
+
+  showHideByClassName("date", SHOW_DATE)
+  var showDateButton = document.getElementById("date")
+  showDateButton.onclick = function() { return showDate(showDateButton); }
+
   showHideByClassName("threadName", SHOW_THREAD_NAME)
   var showThreadNameButton = document.getElementById("threadName")
   showThreadNameButton.onclick = function() { return showThreadName(showThreadNameButton); }
 }
 
-var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "threadName"])
+var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "created", "date", "threadName"])
 
 chrome.storage.local.get(optionsKeys, function(items) {
   try {
@@ -257,6 +276,14 @@ chrome.storage.local.get(optionsKeys, function(items) {
 
     if (items["autodetect"] !== undefined) {
       AUTO_DETECT = items["autodetect"]
+    }
+
+    if (items["created"] !== undefined) {
+      SHOW_CREATED = items["created"]
+    }
+
+    if (items["date"] !== undefined) {
+      SHOW_DATE = items["date"]
     }
 
     if (items["threadName"] !== undefined) {
