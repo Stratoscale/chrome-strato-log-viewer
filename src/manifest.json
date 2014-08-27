@@ -3,7 +3,7 @@
 
   "name": "Stratoscale Log Viewer",
   "description": "Shows a Stratoscale JSON-formatted log file nicely",
-  "version": "1.7",
+  "version": "1.8",
   "background": {
     "scripts": ["backgroundcommon.js", "listener.js", "buttonhook.js"]
   },
