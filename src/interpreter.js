@@ -207,7 +207,7 @@ function parse() {
   }
 
   var css = '<link href="' + chrome.extension.getURL("interpreter.css") + '" rel="stylesheet" type="text/css" />'
-  var options = '<label><input id="autodetect" type="checkbox"' + (AUTO_DETECT ? " checked" : "") + '>Auto detect (experimental)</label><br/>'
+  var options = '<label><input id="autodetect" type="checkbox"' + (AUTO_DETECT ? " checked" : "") + '>Auto detect</label><br/>'
   Object.keys(LOG_LEVELS).forEach(function(level) {
     var checked = ""
     var style = ""
