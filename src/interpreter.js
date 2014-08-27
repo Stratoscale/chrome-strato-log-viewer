@@ -222,8 +222,6 @@ function parse() {
 
   document.head.innerHTML = css
   document.body.innerHTML = showOriginalLink + options + '<pre></pre>'
-  var preTag = document.getElementsByTagName("pre")[0];
-  preTag.appendChild(linesFragment)
 
   Object.keys(LOG_LEVELS).forEach(function(level) {
     showHideByClassName(level, LOG_LEVELS[level].show)
@@ -248,6 +246,9 @@ function parse() {
   showHideByClassName("threadName", SHOW_THREAD_NAME)
   var showThreadNameButton = document.getElementById("threadName")
   showThreadNameButton.onclick = function() { return showThreadName(showThreadNameButton); }
+
+  var preTag = document.getElementsByTagName("pre")[0];
+  preTag.appendChild(linesFragment)
 }
 
 var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "created", "date", "threadName"])
