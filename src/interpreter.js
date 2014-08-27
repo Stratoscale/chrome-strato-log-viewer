@@ -26,7 +26,6 @@ function showHideByClassName(className, show) {
     customStyleSheet = style.sheet
   }
 
-  var currRuleIndex = -1
   for (var i = 0; i < customStyleSheet.cssRules.length; ++i) {
     if (customStyleSheet.cssRules[i].selectorText === '.' + className.toLowerCase()) {
       document.styleSheets[1].removeRule(i)
@@ -152,7 +151,7 @@ function jsonLineToText(json) {
   // replace kwargs
   if (!(args instanceof Array)) {
     for (prop in args) {
-      rekwargs = new RegExp("%\\(" + prop + "\\)([rdsf]|0?\\.?[0-9]+f)", "gm")
+      var rekwargs = new RegExp("%\\(" + prop + "\\)([rdsf]|0?\\.?[0-9]+f)", "gm")
       msg = msg.replace(rekwargs, argument(args[prop]))
     }
   }
@@ -167,7 +166,6 @@ function jsonLineToText(json) {
     exc_text = "<blockquote>" + lineBreaks(obj.exc_text) + "</blockquote>"
   }
 
-  var levelProps = LOG_LEVELS[obj.levelname]
   return '<span class="line ' + obj.levelname + '">' + created(obj.created) + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno) + '</span><br class="' + obj.levelname + '" />'
 }
 
