@@ -1,12 +1,12 @@
 MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 var LOG_LEVELS = {
-  "DEBUG"    : { "show": true },
-  "INFO"     : { "show": true },
-  "WARNING"  : { "show": true },
-  "ERROR"    : { "show": true },
-  "CRITICAL" : { "show": true },
-  "PROGRESS" : { "show": true },
-  "SUCCESS"  : { "show": true },
+  "DEBUG"    : { "show": true, "count": 0 },
+  "INFO"     : { "show": true, "count": 0 },
+  "WARNING"  : { "show": true, "count": 0 },
+  "ERROR"    : { "show": true, "count": 0 },
+  "CRITICAL" : { "show": true, "count": 0 },
+  "PROGRESS" : { "show": true, "count": 0 },
+  "SUCCESS"  : { "show": true, "count": 0 },
 }
 var MAX_LEVEL_WIDTH = 0
 Object.keys(LOG_LEVELS).forEach(function(level) {
@@ -166,6 +166,8 @@ function jsonLineToText(json) {
     exc_text = "<blockquote>" + lineBreaks(obj.exc_text) + "</blockquote>"
   }
 
+  LOG_LEVELS[obj.levelname].count += 1
+
   return '<span class="line ' + obj.levelname + '">' + created(obj.created) + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno) + '</span><br class="' + obj.levelname + '" />'
 }
 
@@ -208,11 +210,15 @@ function parse() {
   var options = '<label><input id="autodetect" type="checkbox"' + (AUTO_DETECT ? " checked" : "") + '>Auto detect (experimental)</label><br/>'
   Object.keys(LOG_LEVELS).forEach(function(level) {
     var checked = ""
+    var style = ""
     var levelProps = LOG_LEVELS[level]
+    if (levelProps.count <= 0) {
+      style = 'style="display: none"'
+    }
     if (levelProps !== undefined && levelProps.show) {
       checked = "checked"
     }
-    options += '<label><input id="' + level + '" type="checkbox"' + ' accesskey="' + level[0] + '" ' + checked + '>' + level + '</label>'
+    options += '<span ' + style + '><label><input id="' + level + '" type="checkbox"' + ' accesskey="' + level[0] + '" ' + checked + '>' + level + '</label></span>'
   })
   options += '<label><input id="created" type="checkbox" accesskey="U" ' + (SHOW_CREATED ? " checked" : "") + '>Unix time</label>'
   options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC date</label>'
@@ -224,7 +230,8 @@ function parse() {
   document.body.innerHTML = showOriginalLink + options + '<pre></pre>'
 
   Object.keys(LOG_LEVELS).forEach(function(level) {
-    showHideByClassName(level, LOG_LEVELS[level].show)
+    var levelProps = LOG_LEVELS[level]
+    showHideByClassName(level, levelProps.show)
     var button = document.getElementById(level)
     button.onclick = function() { return showLogLevel(level, button); }
   })
