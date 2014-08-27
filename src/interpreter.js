@@ -214,8 +214,8 @@ function parse() {
     }
     options += '<label><input id="' + level + '" type="checkbox"' + ' accesskey="' + level[0] + '" ' + checked + '>' + level + '</label>'
   })
-  options += '<label><input id="created" type="checkbox" accesskey="R" ' + (SHOW_CREATED ? " checked" : "") + '>Created</label>'
-  options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC Date</label>'
+  options += '<label><input id="created" type="checkbox" accesskey="U" ' + (SHOW_CREATED ? " checked" : "") + '>Unix time</label>'
+  options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC date</label>'
   options += '<label><input id="threadName" type="checkbox" accesskey="T" ' + (SHOW_THREAD_NAME ? " checked" : "") + '>Thread name</label>'
   options += "<br/>"
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
