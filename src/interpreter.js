@@ -218,7 +218,7 @@ function parse() {
     if (levelProps !== undefined && levelProps.show) {
       checked = "checked"
     }
-    options += '<span ' + style + '><label><input id="' + level + '" type="checkbox"' + ' accesskey="' + level[0] + '" ' + checked + '>' + level + '</label></span>'
+    options += '<span ' + style + '><label><input id="' + level + '" type="checkbox"' + ' accesskey="' + level[0] + '" ' + checked + '>' + level + ' (' + levelProps.count + ')' + '</label></span>'
   })
   options += '<label><input id="created" type="checkbox" accesskey="U" ' + (SHOW_CREATED ? " checked" : "") + '>Unix time</label>'
   options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC date</label>'
