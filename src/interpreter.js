@@ -168,7 +168,7 @@ function jsonLineToText(json) {
 
   LOG_LEVELS[obj.levelname].count += 1
 
-  return '<span class="line ' + obj.levelname + '">' + created(obj.created) + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno) + '</span><br class="' + obj.levelname + '" />'
+  return [ created(obj.created) + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno), obj.levelname ]
 }
 
 function parse() {
@@ -176,25 +176,31 @@ function parse() {
   var linesFragment = document.createDocumentFragment()
   var inputLines = document.body.innerText.split("\n")
   var lineParseSuccess = inputLines.every(function(line) {
+    var level = ""
     if (line === "") {
-      line = '<span class="line">[EMPTY LOG LINE]</span><br/>'
+      line = '[EMPTY LOG LINE]'
     } else if (line === "None") {
-      line = '<span class="line">[NONE LOG LINE]</span><br/>'
+      line = '[NONE LOG LINE]'
     } else if (line[0] === '\ufffd' && line === Array(line.length + 1).join('\ufffd')) {
-      line = '<span class="line">' + line + '</span><br/>'
+      line = line
     } else {
       try {
-        line = jsonLineToText(line)
+        lineAndLevel = jsonLineToText(line)
+        line = lineAndLevel[0]
+        level = lineAndLevel[1]
       } catch(err) {
         console.log(err)
         if (autoParse === true) {
             return false // When not auto-parsing, continue
         }
-        line = '<span class="line">[FAILED LOG LINE]: ' + line + '</span><br/>'
+        line = '[FAILED LOG LINE]: ' + line
       }
     }
 
-    var parsedLine = parser.parseFromString(line, "text/html").body
+    var parsedLine = parser.parseFromString(
+        ['<span class="line ', level, '">', line, '</span><br class="', level, '" />'].join(""),
+        "text/html"
+      ).body
     linesFragment.appendChild(parsedLine.childNodes[0]) // <span line>
     linesFragment.appendChild(parsedLine.childNodes[0]) // <br>
     return true
