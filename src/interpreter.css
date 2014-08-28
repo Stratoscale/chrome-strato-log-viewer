@@ -18,3 +18,7 @@
   color: gray;
   font-size: small;
 }
+
+.line:hover .location {
+  display: inline;
+}

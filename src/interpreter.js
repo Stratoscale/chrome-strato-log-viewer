@@ -17,6 +17,7 @@ var AUTO_DETECT = false
 var SHOW_CREATED = true
 var SHOW_DATE = false
 var SHOW_THREAD_NAME = false
+var SHOW_LOCATION = true
 var customStyleSheet = null
 
 function showHideByClassName(className, show) {
@@ -69,6 +70,13 @@ function showThreadName(cb) {
   SHOW_THREAD_NAME = cb.checked
   showHideByClassName("threadName", cb.checked)
   return true  
+}
+
+function showLocation(cb) {
+  chrome.storage.local.set({ "location": cb.checked })
+  SHOW_LOCATION = cb.checked
+  showHideByClassName("location", cb.checked)
+  return true
 }
 
 function showOriginal() {
@@ -161,14 +169,14 @@ function jsonLineToText(json) {
     msg = msg.replace("%s", argument(args[i]))
   }
 
-  var exc_text = ""
+  var exc_text = " "
   if (obj.exc_text) {
-    exc_text = "<blockquote>" + lineBreaks(obj.exc_text) + "</blockquote>"
+    exc_text = [ "<blockquote>", lineBreaks(obj.exc_text), "</blockquote> " ].join("")
   }
 
   LOG_LEVELS[obj.levelname].count += 1
 
-  return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, " ", fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
+  return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
 }
 
 function parse() {
@@ -229,6 +237,7 @@ function parse() {
   options += '<label><input id="created" type="checkbox" accesskey="U" ' + (SHOW_CREATED ? " checked" : "") + '>Unix time</label>'
   options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC date</label>'
   options += '<label><input id="threadName" type="checkbox" accesskey="T" ' + (SHOW_THREAD_NAME ? " checked" : "") + '>Thread name</label>'
+  options += '<label><input id="location" type="checkbox" accesskey="F" ' + (SHOW_LOCATION ? " checked" : "") + '>File</label>'
   options += "<br/>"
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
 
@@ -260,11 +269,15 @@ function parse() {
   var showThreadNameButton = document.getElementById("threadName")
   showThreadNameButton.onclick = function() { return showThreadName(showThreadNameButton); }
 
+  showHideByClassName("location", SHOW_LOCATION)
+  var showLocationButton = document.getElementById("location")
+  showLocationButton.onclick = function() { return showLocation(showLocationButton); }
+
   var preTag = document.getElementsByTagName("pre")[0];
   preTag.appendChild(linesFragment)
 }
 
-var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "created", "date", "threadName"])
+var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "created", "date", "threadName", "location"])
 
 chrome.storage.local.get(optionsKeys, function(items) {
   try {
@@ -300,6 +313,10 @@ chrome.storage.local.get(optionsKeys, function(items) {
 
     if (items["threadName"] !== undefined) {
       SHOW_THREAD_NAME = items["threadName"]
+    }
+
+    if (items["location"] !== undefined) {
+      SHOW_LOCATION = items["location"]
     }
 
     console.time('parse')
