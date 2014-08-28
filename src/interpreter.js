@@ -168,7 +168,7 @@ function jsonLineToText(json) {
 
   LOG_LEVELS[obj.levelname].count += 1
 
-  return [ created(obj.created) + threadName(obj.threadName) + levelname(obj.levelname, MAX_LEVEL_WIDTH) + " " + msg + exc_text + " " + fileLocation(obj.pathname, obj.lineno), obj.levelname ]
+  return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, " ", fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
 }
 
 function parse() {
