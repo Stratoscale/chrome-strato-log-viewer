@@ -88,8 +88,7 @@ function htmlEncode(s)
 {
   var el = document.createElement("div");
   el.innerText = el.textContent = s;
-  s = el.innerHTML;
-  return s;
+  return el.innerHTML;
 }
 
 function lineBreaks(obj) {
@@ -111,7 +110,7 @@ function padLeft(s, n, c) {
 }
 
 function levelname(name, maxLevelNameWidth) {
-  return '<span>' + padSpacesRight(name, maxLevelNameWidth) + '</span>'
+  return padSpacesRight(name, maxLevelNameWidth)
 }
 
 function fileLocation(filename, lineno) {
@@ -120,11 +119,11 @@ function fileLocation(filename, lineno) {
     filename = filename.substr(index + 1)
   }
     
-  return '<span class="location">(' + filename + ':' + lineno + ')</span>'
+  return ['<span class="location">(', filename, ':', lineno, ')</span>'].join("")
 }
 
 function threadName(name) {
-  return '<span class="threadName">' + name + ' </span>'
+  return ['<span class="threadName">', name, ' </span>'].join("")
 }
 
 function created(utcSeconds) {
@@ -136,14 +135,14 @@ function created(utcSeconds) {
     padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
     padLeft(date.getUTCSeconds().toString(), 2, '0')
   
-  return '<span class="created">' + utcSeconds.toFixed(6) + ' </span><span class="date">' + dateString + ' </span>'
+  return ['<span class="created">', utcSeconds.toFixed(6), ' </span><span class="date">', dateString, ' </span>'].join("")
 }
 
 function argument(arg) {
   if (arg == null) {
     return "(null)"
   }
-  return lineBreaks(arg).toString()
+  return lineBreaks(arg)
 }
 
 function jsonLineToText(json) {
@@ -205,12 +204,10 @@ function parse() {
       }
     }
 
-    var parsedLine = parser.parseFromString(
-        ['<span class="line ', level, '">', line, '</span><br class="', level, '" />'].join(""),
+    linesFragment.appendChild(parser.parseFromString(
+        ['<span class="line ', level, '">', line, '<br/></span>'].join(""),
         "text/html"
-      ).body
-    linesFragment.appendChild(parsedLine.childNodes[0]) // <span line>
-    linesFragment.appendChild(parsedLine.childNodes[0]) // <br>
+      ).body.childNodes[0]) // <span line>
     return true
   });
   
