@@ -27,13 +27,19 @@ function showHideByClassName(className, show) {
     customStyleSheet = style.sheet
   }
 
+  // Restore default display for this class
   for (var i = 0; i < customStyleSheet.cssRules.length; ++i) {
     if (customStyleSheet.cssRules[i].selectorText === '.' + className.toLowerCase()) {
       document.styleSheets[1].removeRule(i)
+      --i
     }
   }
 
-  customStyleSheet.insertRule('.' + className + ' { display: ' + (show ? "inline" : "none") + '; }', 0)
+  if (show === true) {
+    return
+  }
+
+  customStyleSheet.insertRule('.' + className + ' { display: none; }', 0)
 }
 
 function showLogLevel(level, cb) {
@@ -84,11 +90,14 @@ function showOriginal() {
   return false
 }
 
+var htmlEncodingHelper = null
 function htmlEncode(s)
 {
-  var el = document.createElement("div");
-  el.innerText = el.textContent = s;
-  return el.innerHTML;
+  if (htmlEncodingHelper === null) {
+    htmlEncodingHelper = document.createElement("div")
+  }
+  htmlEncodingHelper.innerText = htmlEncodingHelper.textContent = s
+  return htmlEncodingHelper.innerHTML;
 }
 
 function lineBreaks(obj) {
@@ -145,6 +154,12 @@ function argument(arg) {
   return lineBreaks(arg)
 }
 
+// Call to eval() in a separate function because functions that contain calls to eval() cannot
+// be optimized. See: https://github.com/petkaantonov/bluebird/wiki/Optimization-killers
+function doEval(args) {
+  return eval(args)
+}
+
 function jsonLineToText(json) {
   var obj = JSON.parse(json)
 
@@ -154,10 +169,10 @@ function jsonLineToText(json) {
   }
   msg = lineBreaks(msg)
 
-  var args = eval(obj.args)
+  var args = doEval(obj.args)
   // replace kwargs
   if (!(args instanceof Array)) {
-    for (prop in args) {
+    for (var prop in args) {
       var rekwargs = new RegExp("%\\(" + prop + "\\)([rdsf]|0?\\.?[0-9]+f)", "gm")
       msg = msg.replace(rekwargs, argument(args[prop]))
     }
