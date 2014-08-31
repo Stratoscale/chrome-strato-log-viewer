@@ -4,7 +4,7 @@ chrome.storage.local.get(["autodetect"], function(items) {
       return
     }
 
-    if (document.body.innerText[0] === "{" && document.body.innerText[1] === '"') {
+    if (document.body.innerText.substring(0, 2) === '{"') {
       chrome.runtime.sendMessage({message: "interpret"})
     }
   } catch (err) {
