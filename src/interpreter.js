@@ -193,8 +193,14 @@ function jsonLineToText(json) {
   return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
 }
 
+function createSpanFromLine(line, level) {
+  span = document.createElement("span")
+  span.className = level
+  span.innerHTML = [line, "<br/>"].join("")
+  return span
+}
+
 function parse() {
-  var parser = new DOMParser()
   var linesFragment = document.createDocumentFragment()
   var inputLines = document.body.innerText.split("\n")
   var lineParseSuccess = inputLines.every(function(line) {
@@ -219,10 +225,7 @@ function parse() {
       }
     }
 
-    linesFragment.appendChild(parser.parseFromString(
-        ['<span class="line ', level, '">', line, '<br/></span>'].join(""),
-        "text/html"
-      ).body.childNodes[0]) // <span line>
+    linesFragment.appendChild(createSpanFromLine(line, level))
     return true
   });
   
