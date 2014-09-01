@@ -194,8 +194,8 @@ function jsonLineToText(json) {
 }
 
 function createSpanFromLine(line, level) {
-  span = document.createElement("span")
-  span.className = level
+  var span = document.createElement("span")
+  span.className = "line " + level
   span.innerHTML = [line, "<br/>"].join("")
   return span
 }
