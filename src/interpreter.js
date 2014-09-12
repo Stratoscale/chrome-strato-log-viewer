@@ -257,7 +257,7 @@ function parse() {
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
 
   document.head.innerHTML = css
-  document.body.innerHTML = showOriginalLink + options + '<pre></pre>'
+  document.body.innerHTML = showOriginalLink + options + '<pre><span>LOADING...</span></pre>'
 
   Object.keys(LOG_LEVELS).forEach(function(level) {
     var levelProps = LOG_LEVELS[level]
@@ -288,8 +288,13 @@ function parse() {
   var showLocationButton = document.getElementById("location")
   showLocationButton.onclick = function() { return showLocation(showLocationButton); }
 
-  var preTag = document.getElementsByTagName("pre")[0];
-  preTag.appendChild(linesFragment)
+  // Why do this async? Because this lets the browser "digest" the CSS and consider it when
+  // the fragment with all the lines is added, thus only rendering each line once
+  setTimeout(function() {
+    var preTag = document.getElementsByTagName("pre")[0];
+    preTag.removeChild(preTag.firstChild) // "loading" span
+    preTag.appendChild(linesFragment)
+  }, 0);
 }
 
 var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "created", "date", "threadName", "location"])
