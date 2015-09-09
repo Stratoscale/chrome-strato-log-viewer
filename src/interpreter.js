@@ -147,9 +147,15 @@ function created(utcSeconds) {
   return ['<span class="created">', utcSeconds.toFixed(6), ' </span><span class="date">', dateString, ' </span>'].join("")
 }
 
-function argument(arg) {
+function argument(arg, fractional) {
   if (arg == null) {
     return "(null)"
+  }
+  if (typeof(arg) == "number" && typeof(fractional) != "undefined") {
+    var fix = parseInt(fractional, 10)
+    if (!isNaN(fix)) {
+      return lineBreaks(arg.toFixed(fix))
+    }
   }
   return lineBreaks(arg)
 }
@@ -170,17 +176,18 @@ function jsonLineToText(json) {
   msg = lineBreaks(msg)
 
   var args = doEval(obj.args)
-  // replace kwargs
-  if (!(args instanceof Array)) {
-    for (var prop in args) {
-      var rekwargs = new RegExp("%\\(" + prop + "\\)([rdsf]|([0-9]\\.)?[0-9]+f)", "gm")
-      msg = msg.replace(rekwargs, argument(args[prop]))
+  if (typeof(args) != "undefined") {
+    if (!(args instanceof Array)) {
+      msg = handleDict(msg, args)
+      // special case to handle log of a dict as is
+      msg = msg.replace(/%[rdf]/g, "%s")
+      msg = msg.replace("%s", argument(args))
+    } else {
+      var pattern = XRegExp("%([rdsf]|([0-9]*\\.)?(?<fractional>[0-9]+)f)", "gm");
+      msg = msg.replace(pattern, function(match) {
+        return argument(args.shift(), match.fractional)
+      })
     }
-  }
-  // replace args
-  msg = msg.replace(/%[rdf]/g, "%s")
-  for (var i = 0; i < args.length; ++i) {
-    msg = msg.replace("%s", argument(args[i]))
   }
 
   var exc_text = " "
@@ -191,6 +198,22 @@ function jsonLineToText(json) {
   LOG_LEVELS[obj.levelname].count += 1
 
   return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
+}
+
+function handleDict(msg, dict) {
+  if (!(dict instanceof Array)) {
+    var pattern = new XRegExp("%\\((?<prop>[a-zA-Z][a-zA-Z0-9-_]*)\\)([rdsf]|([0-9]*\\.)?(?<fractional>[0-9]+)f)", "gm")
+    msg = msg.replace(pattern, function(match) {
+      value = dict[match.prop]
+      if (typeof(value) == "undefined") {
+        console.log('did not find matching value for property: ('+match.prop+'), match: ('+match+')')
+        return match
+      } else {
+        return argument(value, match.fractional)
+      }
+    })
+  }
+  return msg
 }
 
 function createDivFromLine(line, level) {
