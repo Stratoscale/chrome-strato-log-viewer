@@ -202,7 +202,7 @@ function jsonLineToText(json) {
 
 function handleDict(msg, dict) {
   if (!(dict instanceof Array)) {
-    var pattern = new XRegExp("%\\((?<prop>[a-zA-Z][a-zA-Z0-9-_]*)\\)([rdsf]|([0-9]*\\.)?(?<fractional>[0-9]+)f)", "gm")
+    var pattern = new XRegExp("%\\((?<prop>[a-zA-Z_][a-zA-Z0-9-_]*)\\)([rdsf]|([0-9]*\\.)?(?<fractional>[0-9]+)f)", "gm")
     msg = msg.replace(pattern, function(match) {
       value = dict[match.prop]
       if (typeof(value) == "undefined") {
