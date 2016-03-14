@@ -183,7 +183,7 @@ function jsonLineToText(json) {
       msg = msg.replace(/%[rdf]/g, "%s")
       msg = msg.replace("%s", argument(args))
     } else {
-      var pattern = XRegExp("%([rdsf]|([0-9]*\\.)?(?<fractional>[0-9]+)f)", "gm");
+      var pattern = XRegExp("%([-]?[0-9]*[rdsf]|([0-9]*\\.)?(?<fractional>[0-9]+)f)", "gm");
       msg = msg.replace(pattern, function(match) {
         return argument(args.shift(), match.fractional)
       })
