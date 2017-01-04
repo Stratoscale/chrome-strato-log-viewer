@@ -7,6 +7,7 @@ var LOG_LEVELS = {
   "CRITICAL" : { "show": true, "count": 0 },
   "PROGRESS" : { "show": true, "count": 0 },
   "SUCCESS"  : { "show": true, "count": 0 },
+  "STEP"     : { "show": true, "count": 0 },
 }
 var MAX_LEVEL_WIDTH = 0
 Object.keys(LOG_LEVELS).forEach(function(level) {
