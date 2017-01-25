@@ -3,12 +3,16 @@ var LOG_LEVELS = {
   "DEBUG"    : { "show": true, "count": 0 },
   "INFO"     : { "show": true, "count": 0 },
   "WARNING"  : { "show": true, "count": 0 },
+  "WARN"     : { "show": true, "count": 0 },
   "ERROR"    : { "show": true, "count": 0 },
   "CRITICAL" : { "show": true, "count": 0 },
   "PROGRESS" : { "show": true, "count": 0 },
   "SUCCESS"  : { "show": true, "count": 0 },
   "STEP"     : { "show": true, "count": 0 },
+  "PANIC"    : { "show": true, "count": 0 },
+  "FATAL"    : { "show": true, "count": 0 },
 }
+
 var MAX_LEVEL_WIDTH = 0
 Object.keys(LOG_LEVELS).forEach(function(level) {
   MAX_LEVEL_WIDTH = Math.max(MAX_LEVEL_WIDTH, level.length)
@@ -124,12 +128,18 @@ function levelname(name, maxLevelNameWidth) {
 }
 
 function fileLocation(filename, lineno) {
+  if (!filename) return '';
   var index = filename.indexOf("/py/")
   if (index > 0) {
     filename = filename.substr(index + 1)
   }
     
-  return ['<span class="location">(', filename, ':', lineno, ')</span>'].join("")
+  return [
+    '<span class="location">(',
+    filename,
+    lineno > 0 ? (':' + lineno) : '',
+    ')</span>'
+  ].join("")
 }
 
 function threadName(name) {
@@ -196,9 +206,24 @@ function jsonLineToText(json) {
     exc_text = [ "<blockquote>", lineBreaks(obj.exc_text), "</blockquote> " ].join("")
   }
 
-  LOG_LEVELS[obj.levelname].count += 1
+  LOG_LEVELS[(obj.level || obj.levelname).toUpperCase()].count++;
 
-  return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
+  // if it's a Python-like log line
+  if (obj.threadName && obj.pathname) {
+    return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
+  }
+  // otherwise, it could be Go application. (e.g: maestro project)
+  var text = [
+    obj.ts,
+    levelname(obj.level, MAX_LEVEL_WIDTH),
+    // key-value fields
+    Object.keys(obj)
+      .filter(k => k != 'level' && k != 'ts' && k  != 'path')
+      .map(k => k + '=' + obj[k])
+      .join(', '),
+    fileLocation(obj.path, -1)
+  ].join(' ');
+  return [text, obj.level]
 }
 
 function handleDict(msg, dict) {
