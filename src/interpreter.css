@@ -1,4 +1,4 @@
-.ERROR, .CRITICAL {
+.ERROR, .CRITICAL, .PANIC, .FATAL {
   color: red;
 }
 
