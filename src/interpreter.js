@@ -34,7 +34,7 @@ function showHideByClassName(className, show) {
 
   // Restore default display for this class
   for (var i = 0; i < customStyleSheet.cssRules.length; ++i) {
-    if (customStyleSheet.cssRules[i].selectorText === '.' + className.toLowerCase()) {
+    if (customStyleSheet.cssRules[i].selectorText.toLowerCase() === '.' + className.toLowerCase()) {
       document.styleSheets[1].removeRule(i)
       --i
     }
