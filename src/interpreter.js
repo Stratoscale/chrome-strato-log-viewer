@@ -179,6 +179,7 @@ function doEval(args) {
 
 function jsonLineToText(json) {
   var obj = JSON.parse(json)
+  obj.level_key = (obj.level || obj.levelname).split(" ")[0]
 
   var msg = obj.msg
   if (msg instanceof Array) {
@@ -206,7 +207,7 @@ function jsonLineToText(json) {
     exc_text = [ "<blockquote>", lineBreaks(obj.exc_text), "</blockquote> " ].join("")
   }
 
-  LOG_LEVELS[(obj.level || obj.levelname).toUpperCase()].count++;
+  LOG_LEVELS[obj.level_key.toUpperCase()].count++;
 
   // if it's a Python-like log line
   if (obj.threadName && obj.pathname) {
