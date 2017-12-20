@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "Stratoscale Log Viewer",
-  "description": "Shows a Stratoscale JSON-formatted log file nicely",
+  "name": "Lightbits Log Viewer",
+  "description": "Shows a Lightbits JSON-formatted log file nicely",
   "version": "2.0",
   "background": {
     "scripts": ["backgroundcommon.js", "listener.js", "buttonhook.js"]
