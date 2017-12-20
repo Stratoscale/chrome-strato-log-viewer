@@ -181,7 +181,7 @@ function jsonLineToText(json) {
   var obj = JSON.parse(json)
   obj.level_key = (obj.level || obj.levelname).split(" ")[0]
 
-  var msg = obj.msg
+  var msg = obj.message
   if (msg instanceof Array) {
     msg = msg.join(" ")
   }
