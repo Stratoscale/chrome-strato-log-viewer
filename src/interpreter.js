@@ -146,6 +146,10 @@ function threadName(name) {
   return ['<span class="threadName">', name, ' </span>'].join("")
 }
 
+function requestId(id) {
+  return ['<span class="requestId">', id, ' </span>'].join("")
+}
+
 function created(utcSeconds) {
   var date = new Date(Math.floor(utcSeconds) * 1000)
   var dateString =
@@ -211,7 +215,7 @@ function jsonLineToText(json) {
 
   // if it's a Python-like log line
   if (obj.threadName && obj.pathname) {
-    return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
+    return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), requestId(obj.request_id), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
   }
   // otherwise, it could be Go application. (e.g: maestro project)
   var text = [
