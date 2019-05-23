@@ -112,11 +112,11 @@ function lineBreaks(obj) {
   } else {
     text = JSON.stringify(obj)
   }
-  return htmlEncode(text).replace(/\n/g, "<br/>")
+  return htmlEncode(text).replace(/\\n/g, "<br/>").replace(/\n/g, "<br/>")
 }
 
 function padSpacesRight(s, n) {
-  return s + Array(n - s.length + 1).join(" ")
+  return s.padEnd(n, ' ')
 }
 
 function padLeft(s, n, c) {
@@ -133,7 +133,7 @@ function fileLocation(filename, lineno) {
   if (index > 0) {
     filename = filename.substr(index + 1)
   }
-    
+
   return [
     '<span class="location">(',
     filename,
@@ -143,11 +143,15 @@ function fileLocation(filename, lineno) {
 }
 
 function threadName(name) {
-  return ['<span class="threadName">', name, ' </span>'].join("")
+  return ['<span class="threadName">', padSpacesRight(name, 6), ' </span>'].join("")
 }
 
 function requestId(id) {
   return ['<span class="requestId">', id, ' </span>'].join("")
+}
+
+function keyVal(value) {
+  return ['<span class="key_val">', value, ' </span>'].join("")
 }
 
 function created(utcSeconds) {
@@ -158,8 +162,20 @@ function created(utcSeconds) {
     padLeft(date.getUTCHours().toString(), 2, '0') + ':' +
     padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
     padLeft(date.getUTCSeconds().toString(), 2, '0')
-  
+
   return ['<span class="created">', utcSeconds.toFixed(6), ' </span><span class="date">', dateString, ' </span>'].join("")
+}
+
+function tsCreated(ts) {
+  var date = new Date(ts)
+  var dateString =
+    MONTHS[date.getUTCMonth()] + ' ' +
+    padLeft(date.getUTCDate().toString(), 2, ' ') + ' ' +
+    padLeft(date.getUTCHours().toString(), 2, '0') + ':' +
+    padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
+    padLeft(date.getUTCSeconds().toString(), 2, '0')
+
+  return ['<span class="created">', padSpacesRight((date.getTime() / 1000).toString(), 14), ' </span><span class="date">', dateString, ' </span>'].join("")
 }
 
 function argument(arg, fractional) {
@@ -181,17 +197,12 @@ function doEval(args) {
   return eval(args)
 }
 
-function jsonLineToText(json) {
-  var obj = JSON.parse(json)
-  obj.level_key = (obj.level || obj.levelname).split(" ")[0]
-
-  var msg = obj.msg
+function messageFormatter(msg, args) {
   if (msg instanceof Array) {
     msg = msg.join(" ")
   }
   msg = lineBreaks(msg)
 
-  var args = doEval(obj.args)
   if (typeof(args) != "undefined") {
     if (!(args instanceof Array)) {
       msg = handleDict(msg, args)
@@ -205,30 +216,100 @@ function jsonLineToText(json) {
       })
     }
   }
+  return msg
+}
+
+function pythonLineToText(lineObj) {
+  msg = messageFormatter(lineObj.msg, lineObj.args)
 
   var exc_text = " "
-  if (obj.exc_text) {
-    exc_text = [ "<blockquote>", lineBreaks(obj.exc_text), "</blockquote> " ].join("")
+  if (lineObj.exc_text) {
+    exc_text = [ "<blockquote>", lineBreaks(lineObj.exc_text), "</blockquote> " ].join("")
   }
 
-  LOG_LEVELS[obj.level_key.toUpperCase()].count++;
-
-  // if it's a Python-like log line
-  if (obj.threadName && obj.pathname) {
-    return [ [ created(obj.created), threadName(obj.threadName), levelname(obj.levelname, MAX_LEVEL_WIDTH), requestId(obj.request_id), " ", msg, exc_text, fileLocation(obj.pathname, obj.lineno) ].join("") , obj.levelname ]
-  }
-  // otherwise, it could be Go application. (e.g: maestro project)
   var text = [
-    obj.ts,
-    levelname(obj.level, MAX_LEVEL_WIDTH),
+    created(lineObj.created),
+    threadName(lineObj.threadName),
+    levelname(lineObj.levelname, MAX_LEVEL_WIDTH),
+    requestId(lineObj.request_id),
+    " ",
+    msg,
+    exc_text,
+    fileLocation(lineObj.pathname, lineObj.lineno)
+  ].join("")
+  return [ text, lineObj.levelname ]
+}
+
+function golangLineToText(lineObj) {
+  var request_id = ""
+  var file = ""
+  var line = ""
+  var thread = ""
+  var error = ""
+
+  // New logging format, all key-val args are under the 'extra_data'
+  // stack context is under 'stack' keyword
+  if ( 'extra_data' in lineObj) {
+    var request_id = lineObj.extra_data.request_id
+    delete lineObj.extra_data.request_id
+    var caller = lineObj.extra_data.caller
+    delete lineObj.extra_data.caller
+    var thread = lineObj.extra_data['go-id']
+    if ( typeof thread == "undefined" ) {
+      thread = "0000"
+    }
+    delete lineObj.extra_data['go-id']
+    stack = lineObj.extra_data.stack
+    if (stack) {
+        error += "\n"
+        stack.forEach(function (s) {
+            error += "\tfile " + s.File + ",line " + s.Line + ", in " + s.Name + "\n"
+        })
+        delete lineObj.extra_data.stack
+    }
+  // Older logging format
+  // stack context string is under 'error' keyword
+  } else {
+    lineObj.extra_data = {}
+    var caller = lineObj.caller
+    var request_id = lineObj.request_id
+    var error = ""
+    if (lineObj.error) {
+      error = [ "<blockquote>", lineBreaks(lineObj.error), "</blockquote> " ].join("")
+    }
+  }
+
+  var file = caller.File
+  var line = caller.Line
+
+  var text = [
+    tsCreated(lineObj.ts),
+    threadName(thread),
+    levelname(lineObj.level, MAX_LEVEL_WIDTH),
+    requestId(request_id),
+    " ",
+    lineObj.msg.trim(),
+    error,
     // key-value fields
-    Object.keys(obj)
-      .filter(k => k != 'level' && k != 'ts' && k  != 'path')
-      .map(k => k + '=' + obj[k])
-      .join(', '),
-    fileLocation(obj.path, -1)
+    keyVal(Object.keys(lineObj.extra_data)
+      .map(k => k + '=' + lineObj.extra_data[k])
+      .join(', ')),
+    fileLocation(file, line)
   ].join(' ');
-  return [text, obj.level]
+  return [text, lineObj.level]
+}
+
+function jsonLineToText(json) {
+  var obj = JSON.parse(json)
+
+  var level_key = (obj.level || obj.levelname).split(" ")[0]
+  LOG_LEVELS[level_key.toUpperCase()].count++;
+
+  if (obj.threadName && obj.pathname) {
+    return pythonLineToText(obj)
+  }
+
+  return golangLineToText(obj)
 }
 
 function handleDict(msg, dict) {

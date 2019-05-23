@@ -19,6 +19,10 @@
   font-size: small;
 }
 
+.key_val {
+  font-weight: bold;
+}
+
 .line:hover .location {
   display: inline;
 }
