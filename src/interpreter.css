@@ -1,3 +1,16 @@
+body {
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+}
+
+.page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .ERROR, .CRITICAL, .PANIC, .FATAL {
   color: red;
 }
@@ -28,15 +41,20 @@
 }
 
 .controls {
-  position: fixed;
-  top: 10px;
-  height: 60px;
+  flex: 0 0 auto;
   width: 100%;
   background: #f7f7f7;
   font-family: sans-serif;
+  font-size: 14px;
+  padding: 10px;
+  border-bottom: 1px solid #cecece;
 }
 
 .lines {
-  margin-top: 80px;
+  flex: 1 1 auto;
+  position: relative;/* need this to position inner content */
+  overflow-y: auto;
+  margin: 0;
+  padding: 10px;
 }
 

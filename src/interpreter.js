@@ -380,7 +380,7 @@ function parse() {
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
 
   document.head.innerHTML = css
-  document.body.innerHTML = '<div class="controls">' + showOriginalLink + options + '</div><pre class="lines"><span>LOADING...</span></pre>'
+  document.body.innerHTML = '<div class="page"><div class="controls">' + showOriginalLink + options + '</div><pre class="lines"><span>LOADING...</span></pre></div>'
 
   Object.keys(LOG_LEVELS).forEach(function(level) {
     var levelProps = LOG_LEVELS[level]
