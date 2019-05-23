@@ -58,3 +58,16 @@ body {
   padding: 10px;
 }
 
+.requestId:hover {
+  cursor : pointer;
+}
+
+.threadName:hover {
+  cursor : pointer;
+}
+
+#clearHighlights {
+  position : absolute;
+  right : 10px;
+}
+

@@ -26,6 +26,9 @@ var SHOW_LOCATION = true
 var SHOW_REQUEST_ID = true
 var customStyleSheet = null
 
+var HIGHLIGHT_COUNT = 0
+var HIGHLIGHTED_CLASSES = {}
+
 function showHideByClassName(className, show) {
   if (customStyleSheet === null) {
     var style = document.createElement("style")
@@ -146,7 +149,7 @@ function fileLocation(filename, lineno) {
 }
 
 function threadName(name) {
-  return `<span class="threadName">${padSpacesRight(name, 6)} </span>`
+  return `<span class="threadName thread-${name}">${padSpacesRight(name, 6)} </span>`
 }
 
 function requestId(id) {
@@ -384,7 +387,8 @@ function parse() {
   options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC date</label>'
   options += '<label><input id="threadName" type="checkbox" accesskey="T" ' + (SHOW_THREAD_NAME ? " checked" : "") + '>Thread name</label>'
   options += '<label><input id="location" type="checkbox" accesskey="F" ' + (SHOW_LOCATION ? " checked" : "") + '>File</label>'
-  options += '<label><input id="requestId" type="checkbox" accesskey="F" ' + (SHOW_REQUEST_ID ? " checked" : "") + '>requestId</label>'
+  options += '<label><input id="requestId" type="checkbox" accesskey="R" ' + (SHOW_REQUEST_ID ? " checked" : "") + '>requestId</label>'
+  options += '<label><input id="clearHighlights" type="button" accesskey="C" value="clear highlights"></label>'
   options += "<br/>"
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
 
@@ -424,6 +428,9 @@ function parse() {
   var showRequestIdButton = document.getElementById("requestId")
   showRequestIdButton.onclick = function() { return showRequestId(showRequestIdButton); }
 
+  var clearHighlightsButton = document.getElementById("clearHighlights")
+  clearHighlightsButton.onclick = function() { return clearHighlights(); }
+
   // Why do this async? Because this lets the browser "digest" the CSS and consider it when
   // the fragment with all the lines is added, thus only rendering each line once
   setTimeout(function() {
@@ -432,7 +439,51 @@ function parse() {
     preTag.appendChild(linesFragment)
   }, 0);
 
-  document.body.addEventListener('click', (e) => console.log(e.target))
+  document.body.addEventListener('click', (e) => handleHighlightClick(e.target))
+}
+
+const colors = ["#393b79", "#5254a3", "#6b6ecf", "#9c9ede", "#637939", "#8ca252", "#b5cf6b", "#cedb9c", "#8c6d31", "#bd9e39", "#e7ba52", "#e7cb94", "#843c39", "#ad494a", "#d6616b", "#e7969c", "#7b4173", "#a55194", "#ce6dbd", "#de9ed6"]
+
+function getColor(i) {
+    return colors[i % colors.length]
+}
+
+
+function handleHighlightClick(target) {
+  if (target.classList.contains("requestId")) {
+    classInstance = target.classList[1]
+    toggleHighlight("requestId", classInstance)
+  }
+  if (target.classList.contains("threadName")) {
+    classInstance = target.classList[1]
+    toggleHighlight("threadName", classInstance)
+  }
+}
+
+function toggleHighlight(generalClass, classInstance) {
+  if (!HIGHLIGHTED_CLASSES.hasOwnProperty(classInstance)) {
+    var background = getColor(HIGHLIGHT_COUNT++)
+    customStyleSheet.insertRule(`body.${classInstance} .${generalClass}.${classInstance} { color: white; background-color: ${background} }`, 0)
+  }
+  if (HIGHLIGHTED_CLASSES[classInstance]) {
+    document.body.classList.remove(classInstance)
+    HIGHLIGHTED_CLASSES[classInstance] = false
+  } else {
+    document.body.classList.add(classInstance)
+    HIGHLIGHTED_CLASSES[classInstance] = true
+  }
+}
+
+function clearHighlights(generalClass, classInstance) {
+  var toRemove = []
+  document.body.classList.forEach(function(cls) {
+    toRemove.push(cls)
+  })
+  toRemove.forEach(function(cls) {
+    if (cls.startsWith("req-") || cls.startsWith("thread-")) {
+      document.body.classList.remove(cls)
+    }
+  })
 }
 
 var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "created", "date", "threadName", "location"])
