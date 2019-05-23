@@ -120,7 +120,7 @@ function padSpacesRight(s, n) {
 }
 
 function padLeft(s, n, c) {
-  return Array(n - s.length + 1).join(c) + s
+  return s.padStart(n ,c)
 }
 
 function levelname(name, maxLevelNameWidth) {
@@ -134,24 +134,19 @@ function fileLocation(filename, lineno) {
     filename = filename.substr(index + 1)
   }
 
-  return [
-    '<span class="location">(',
-    filename,
-    lineno > 0 ? (':' + lineno) : '',
-    ')</span>'
-  ].join("")
+  return `<span class="location">(${filename}${lineno > 0 ? (':' + lineno) : ''})</span>`
 }
 
 function threadName(name) {
-  return ['<span class="threadName">', padSpacesRight(name, 6), ' </span>'].join("")
+  return `<span class="threadName">${padSpacesRight(name, 6)} </span>`
 }
 
 function requestId(id) {
-  return ['<span class="requestId">', id, ' </span>'].join("")
+  return id ? `<span class="requestId">${id} </span>` : ''
 }
 
 function keyVal(value) {
-  return ['<span class="key_val">', value, ' </span>'].join("")
+  return `<span class="key_val">${value} </span>`
 }
 
 function created(utcSeconds) {
@@ -163,7 +158,7 @@ function created(utcSeconds) {
     padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
     padLeft(date.getUTCSeconds().toString(), 2, '0')
 
-  return ['<span class="created">', utcSeconds.toFixed(6), ' </span><span class="date">', dateString, ' </span>'].join("")
+  return `<span class="created">${utcSeconds.toFixed(6)} </span><span class="date">${dateString} </span>`
 }
 
 function tsCreated(ts) {
@@ -175,7 +170,7 @@ function tsCreated(ts) {
     padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
     padLeft(date.getUTCSeconds().toString(), 2, '0')
 
-  return ['<span class="created">', padSpacesRight((date.getTime() / 1000).toString(), 14), ' </span><span class="date">', dateString, ' </span>'].join("")
+  return `<span class="created">${padSpacesRight((date.getTime() / 1000).toString(), 14)} </span><span class="date">${dateString} </span>`
 }
 
 function argument(arg, fractional) {
@@ -224,7 +219,7 @@ function pythonLineToText(lineObj) {
 
   var exc_text = " "
   if (lineObj.exc_text) {
-    exc_text = [ "<blockquote>", lineBreaks(lineObj.exc_text), "</blockquote> " ].join("")
+    exc_text = `<blockquote>${lineBreaks(lineObj.exc_text)}</blockquote> `
   }
 
   var text = [
@@ -242,28 +237,25 @@ function pythonLineToText(lineObj) {
 
 function golangLineToText(lineObj) {
   var request_id = ""
-  var file = ""
-  var line = ""
   var thread = ""
   var error = ""
+  var caller
 
   // New logging format, all key-val args are under the 'extra_data'
   // stack context is under 'stack' keyword
   if ( 'extra_data' in lineObj) {
-    var request_id = lineObj.extra_data.request_id
+    request_id = lineObj.extra_data.request_id
     delete lineObj.extra_data.request_id
-    var caller = lineObj.extra_data.caller
+    caller = lineObj.extra_data.caller
     delete lineObj.extra_data.caller
-    var thread = lineObj.extra_data['go-id']
-    if ( typeof thread == "undefined" ) {
-      thread = "0000"
-    }
+    thread = lineObj.extra_data['go-id'] || '0000'
     delete lineObj.extra_data['go-id']
-    stack = lineObj.extra_data.stack
+
+    var stack = lineObj.extra_data.stack
     if (stack) {
         error += "\n"
         stack.forEach(function (s) {
-            error += "\tfile " + s.File + ",line " + s.Line + ", in " + s.Name + "\n"
+            error += `\tfile ${s.File},line ${s.Line}, in ${s.Name}\n`
         })
         delete lineObj.extra_data.stack
     }
@@ -271,16 +263,12 @@ function golangLineToText(lineObj) {
   // stack context string is under 'error' keyword
   } else {
     lineObj.extra_data = {}
-    var caller = lineObj.caller
-    var request_id = lineObj.request_id
-    var error = ""
-    if (lineObj.error) {
-      error = [ "<blockquote>", lineBreaks(lineObj.error), "</blockquote> " ].join("")
-    }
+    caller = lineObj.caller
+    request_id = lineObj.request_id
+    error = lineObj.error ? `<blockquote>${lineBreaks(lineObj.error)}</blockquote>` : ""
   }
 
-  var file = caller.File
-  var line = caller.Line
+  var {File, Line} = caller || {}
 
   var text = [
     tsCreated(lineObj.ts),
@@ -292,9 +280,9 @@ function golangLineToText(lineObj) {
     error,
     // key-value fields
     keyVal(Object.keys(lineObj.extra_data)
-      .map(k => k + '=' + lineObj.extra_data[k])
+      .map(k => `${k}=${lineObj.extra_data[k]}`)
       .join(', ')),
-    fileLocation(file, line)
+    fileLocation(File, Line)
   ].join(' ');
   return [text, lineObj.level]
 }
