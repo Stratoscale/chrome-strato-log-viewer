@@ -26,3 +26,17 @@
 .line:hover .location {
   display: inline;
 }
+
+.controls {
+  position: fixed;
+  top: 10px;
+  height: 60px;
+  width: 100%;
+  background: #f7f7f7;
+  font-family: sans-serif;
+}
+
+.lines {
+  margin-top: 80px;
+}
+

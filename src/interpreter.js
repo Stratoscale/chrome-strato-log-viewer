@@ -142,7 +142,7 @@ function threadName(name) {
 }
 
 function requestId(id) {
-  return id ? `<span class="requestId">${id} </span>` : ''
+  return id ? `<span class="requestId req-${id.replace('.', '-')}">${id} </span>` : ''
 }
 
 function keyVal(value) {
@@ -380,7 +380,7 @@ function parse() {
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
 
   document.head.innerHTML = css
-  document.body.innerHTML = showOriginalLink + options + '<pre><span>LOADING...</span></pre>'
+  document.body.innerHTML = '<div class="controls">' + showOriginalLink + options + '</div><pre class="lines"><span>LOADING...</span></pre>'
 
   Object.keys(LOG_LEVELS).forEach(function(level) {
     var levelProps = LOG_LEVELS[level]
@@ -418,6 +418,8 @@ function parse() {
     preTag.removeChild(preTag.firstChild) // "loading" span
     preTag.appendChild(linesFragment)
   }, 0);
+
+  document.body.addEventListener('click', (e) => console.log(e.target))
 }
 
 var optionsKeys = Object.keys(LOG_LEVELS).concat(["autodetect", "showoriginal", "created", "date", "threadName", "location"])
