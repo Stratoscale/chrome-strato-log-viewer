@@ -23,6 +23,7 @@ var SHOW_CREATED = true
 var SHOW_DATE = false
 var SHOW_THREAD_NAME = false
 var SHOW_LOCATION = true
+var SHOW_REQUEST_ID = true
 var customStyleSheet = null
 
 function showHideByClassName(className, show) {
@@ -87,6 +88,13 @@ function showLocation(cb) {
   chrome.storage.local.set({ "location": cb.checked })
   SHOW_LOCATION = cb.checked
   showHideByClassName("location", cb.checked)
+  return true
+}
+
+function showRequestId(cb) {
+  chrome.storage.local.set({ "requestId": cb.checked })
+  SHOW_REQUEST_ID = cb.checked
+  showHideByClassName("requestid", cb.checked)
   return true
 }
 
@@ -376,6 +384,7 @@ function parse() {
   options += '<label><input id="date" type="checkbox" accesskey="A" ' + (SHOW_DATE ? " checked" : "") + '>UTC date</label>'
   options += '<label><input id="threadName" type="checkbox" accesskey="T" ' + (SHOW_THREAD_NAME ? " checked" : "") + '>Thread name</label>'
   options += '<label><input id="location" type="checkbox" accesskey="F" ' + (SHOW_LOCATION ? " checked" : "") + '>File</label>'
+  options += '<label><input id="requestId" type="checkbox" accesskey="F" ' + (SHOW_REQUEST_ID ? " checked" : "") + '>requestId</label>'
   options += "<br/>"
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
 
@@ -410,6 +419,10 @@ function parse() {
   showHideByClassName("location", SHOW_LOCATION)
   var showLocationButton = document.getElementById("location")
   showLocationButton.onclick = function() { return showLocation(showLocationButton); }
+
+  showHideByClassName("location", SHOW_REQUEST_ID)
+  var showRequestIdButton = document.getElementById("requestId")
+  showRequestIdButton.onclick = function() { return showRequestId(showRequestIdButton); }
 
   // Why do this async? Because this lets the browser "digest" the CSS and consider it when
   // the fragment with all the lines is added, thus only rendering each line once
