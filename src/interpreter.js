@@ -162,26 +162,26 @@ function keyVal(value) {
 
 function created(utcSeconds) {
   var date = new Date(Math.floor(utcSeconds) * 1000)
-  var dateString =
-    MONTHS[date.getUTCMonth()] + ' ' +
-    padLeft(date.getUTCDate().toString(), 2, ' ') + ' ' +
-    padLeft(date.getUTCHours().toString(), 2, '0') + ':' +
-    padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
-    padLeft(date.getUTCSeconds().toString(), 2, '0')
-
+  var dateString = date2string(date)
   return `<span class="created">${utcSeconds.toFixed(6)} </span><span class="date">${dateString} </span>`
 }
 
-function tsCreated(ts) {
-  var date = new Date(ts)
-  var dateString =
-    MONTHS[date.getUTCMonth()] + ' ' +
-    padLeft(date.getUTCDate().toString(), 2, ' ') + ' ' +
-    padLeft(date.getUTCHours().toString(), 2, '0') + ':' +
-    padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
-    padLeft(date.getUTCSeconds().toString(), 2, '0')
+function date2string(date) {
+    return MONTHS[date.getUTCMonth()] + ' ' +
+      padLeft(date.getUTCDate().toString(), 2, ' ') + ' ' +
+      padLeft(date.getUTCHours().toString(), 2, '0') + ':' +
+      padLeft(date.getUTCMinutes().toString(), 2, '0') + ':'  +
+      padLeft(date.getUTCSeconds().toString(), 2, '0')
+}
 
-  return `<span class="created">${padSpacesRight((date.getTime() / 1000).toString(), 14)} </span><span class="date">${dateString} </span>`
+function tsCreated(ts) {
+  if (typeof ts  === "string") {
+    var date = new Date(ts)
+    var dateString = date2string(date)
+    return `<span class="created">${padSpacesRight((date.getTime() / 1000).toString(), 14)} </span><span class="date">${dateString} </span>`
+  } else {
+    return created(ts)
+  }
 }
 
 function argument(arg, fractional) {
