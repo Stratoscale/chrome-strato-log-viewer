@@ -24,6 +24,7 @@ var SHOW_DATE = false
 var SHOW_THREAD_NAME = false
 var SHOW_LOCATION = true
 var SHOW_REQUEST_ID = true
+var SHOW_PROCESS = false
 var customStyleSheet = null
 
 var HIGHLIGHT_COUNT = 0
@@ -101,6 +102,13 @@ function showRequestId(cb) {
   return true
 }
 
+function showProcess(cb) {
+  chrome.storage.local.set({ "process": cb.checked })
+  SHOW_PROCESS = cb.checked
+  showHideByClassName("process", cb.checked)
+  return true
+}
+
 function showOriginal() {
   chrome.storage.local.set({ "showoriginal": true }, function() { location.reload(); })
   return false
@@ -154,6 +162,10 @@ function threadName(name) {
 
 function requestId(id) {
   return id ? `<span class="requestId req-${id.replace('.', '-')}">${id} </span>` : ''
+}
+
+function process(id) {
+  return id ? `<span class="process req-${id}">${id} </span>` : ''
 }
 
 function keyVal(value) {
@@ -235,6 +247,7 @@ function pythonLineToText(lineObj) {
 
   var text = [
     created(lineObj.created),
+    process(lineObj.process),
     threadName(lineObj.threadName),
     levelname(lineObj.levelname, MAX_LEVEL_WIDTH),
     requestId(lineObj.request_id),
@@ -388,6 +401,7 @@ function parse() {
   options += '<label><input id="threadName" type="checkbox" accesskey="T" ' + (SHOW_THREAD_NAME ? " checked" : "") + '>Thread name</label>'
   options += '<label><input id="location" type="checkbox" accesskey="F" ' + (SHOW_LOCATION ? " checked" : "") + '>File</label>'
   options += '<label><input id="requestId" type="checkbox" accesskey="R" ' + (SHOW_REQUEST_ID ? " checked" : "") + '>requestId</label>'
+  options += '<label><input id="process" type="checkbox" accesskey="P" ' + (SHOW_PROCESS ? " checked" : "") + '>Process</label>'
   options += '<label><input id="clearHighlights" type="button" accesskey="C" value="clear highlights"></label>'
   options += "<br/>"
   var showOriginalLink = '<a href="#" id="showoriginal">Show original</a><br/>'
@@ -424,9 +438,13 @@ function parse() {
   var showLocationButton = document.getElementById("location")
   showLocationButton.onclick = function() { return showLocation(showLocationButton); }
 
-  showHideByClassName("location", SHOW_REQUEST_ID)
+  showHideByClassName("requestId", SHOW_REQUEST_ID)
   var showRequestIdButton = document.getElementById("requestId")
   showRequestIdButton.onclick = function() { return showRequestId(showRequestIdButton); }
+
+  showHideByClassName("process", SHOW_PROCESS)
+  var showProcessButton = document.getElementById("process")
+  showProcessButton.onclick = function() { return showProcess(showProcessButton); }
 
   var clearHighlightsButton = document.getElementById("clearHighlights")
   clearHighlightsButton.onclick = function() { return clearHighlights(); }
@@ -526,6 +544,10 @@ chrome.storage.local.get(optionsKeys, function(items) {
 
     if (items["location"] !== undefined) {
       SHOW_LOCATION = items["location"]
+    }
+
+    if (items["process"] !== undefined) {
+      SHOW_PROCESS = items["process"]
     }
 
     console.time('parse')
