@@ -365,7 +365,7 @@ function parse() {
         level = lineAndLevel[1]
       } catch(err) {
         console.log(err)
-        if (!window.location.pathname.endsWith('.stratolog') && autoParse === true) {
+        if (!(window.location.pathname.endsWith('.stratolog') || (window.location.pathname.endsWith('.log'))) && autoParse === true) {
             return false // When not auto-parsing, continue
         }
         line = '[FAILED LOG LINE]: ' + line
