@@ -297,7 +297,7 @@ function golangLineToText(lineObj) {
   var text = [
     tsCreated(lineObj.ts),
     threadName(thread),
-    levelname(lineObj.level, MAX_LEVEL_WIDTH),
+    levelname(lineObj.level.toUpperCase(), MAX_LEVEL_WIDTH),
     requestId(request_id),
     " ",
     lineObj.msg.trim(),
@@ -362,7 +362,7 @@ function parse() {
       try {
         lineAndLevel = jsonLineToText(line)
         line = lineAndLevel[0]
-        level = lineAndLevel[1]
+        level = lineAndLevel[1].toUpperCase()
       } catch(err) {
         console.log(err)
         if (!(window.location.pathname.endsWith('.stratolog') || (window.location.pathname.endsWith('.log'))) && autoParse === true) {
