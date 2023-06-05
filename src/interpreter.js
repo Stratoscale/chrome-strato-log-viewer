@@ -98,7 +98,7 @@ function showLocation(cb) {
 function showRequestId(cb) {
   chrome.storage.local.set({ "requestId": cb.checked })
   SHOW_REQUEST_ID = cb.checked
-  showHideByClassName("requestid", cb.checked)
+  showHideByClassName("requestId", cb.checked)
   return true
 }
 
@@ -161,7 +161,7 @@ function threadName(name) {
 }
 
 function requestId(id) {
-  return id ? `<span class="requestId req-${id.replace('.', '-')}">${id} </span>` : ''
+  return id ? `<span class="requestId req-${id.replace('.', '-')}">${id}</span>` : ''
 }
 
 function process(id) {
@@ -267,9 +267,9 @@ function golangLineToText(lineObj) {
 
   // New logging format, all key-val args are under the 'extra_data'
   // stack context is under 'stack' keyword
-  if ( 'extra_data' in lineObj) {
-    request_id = lineObj.extra_data.request_id
-    delete lineObj.extra_data.request_id
+  if ('extra_data' in lineObj) {
+    request_id = lineObj.extra_data['request_id']
+    delete lineObj.extra_data['request_id']
     caller = lineObj.extra_data.caller
     delete lineObj.extra_data.caller
     thread = lineObj.extra_data['go-id'] || '0000'
