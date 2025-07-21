@@ -1,11 +1,11 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
 
   "name": "Stratoscale Log Viewer",
   "description": "Shows a Stratoscale JSON-formatted log file nicely",
-  "version": "2.0",
+  "version": "2.1",
   "background": {
-    "scripts": ["backgroundcommon.js", "listener.js", "buttonhook.js"]
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -17,13 +17,18 @@
   "permissions": [
     "activeTab",
     "storage",
-    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
     "<all_urls>"
   ],
-  "browser_action": {
+  "action": {
     "default_icon": "icon.png"
   },
   "web_accessible_resources": [
-    "interpreter.css"
+    {
+      "resources": ["interpreter.css"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }
